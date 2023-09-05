@@ -19,7 +19,8 @@ const Start = ({ navigation }) => {
           value={name}
           onChangeText={setName}
           placeholder='Type username here'
-          placeholderTextColor='white'
+          placeholderTextColor='#FFFFFF'
+          color='#FFFFFF'
           fontWeight='600'
           require
           />
@@ -48,6 +49,10 @@ const Start = ({ navigation }) => {
       </View>
       {/* #090C08; #474056; #8A95A5; #B9C6AE */}
       <TouchableOpacity
+        accessible={true}
+        accessibilityLabel="Go to chat page"
+        AccessibilityHint="Move you from the start page to the chat page."
+        accessibilityRole="button"
         style={styles.button}
         onPress={() => navigation.navigate('Chat', {name: name, color: bgColor})}
       ><Text style={{color: '#FFFFFF'}}>Start Chatting</Text></TouchableOpacity>
@@ -71,7 +76,6 @@ const styles = StyleSheet.create({
    fontSize: 16,
    fontWeight: 300,
    color: '#757083',
-   opacity: .5,
  },
  appTitle: {
    fontSize: 45,
