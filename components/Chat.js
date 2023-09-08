@@ -1,14 +1,21 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View, KeyboardAvoidingView, Platform, Text } from 'react-native';
+import { 
+  collection, getDocs, addDoc, 
+  onSnapshot, query, orderBy 
+} from "firebase/firestore";
+import { 
+  StyleSheet, View, KeyboardAvoidingView, 
+  Platform, Text, TextInput, Alert, 
+  TouchableOpacity
+  } from 'react-native';
 import { Bubble, GiftedChat } from "react-native-gifted-chat"; //find props from their repo
 
-const Chat = ({ route, navigation }) => {
-  const { name } = route.params;
-
+const Chat = ({ route, navigation, db }) => {
+  const { name, userID } = route.params;
   const [messages, setMessages] = useState([]);
 
   const onSend = (newMessages) => {
-    setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages))
+    addDoc(collection(db, "messages"), newMessages[0])
   }
   const renderBubble = (props) => {
     return <Bubble
@@ -24,27 +31,24 @@ const Chat = ({ route, navigation }) => {
     />
   }
 
-  // setMessages([
-  //   {
-  //     _id: 1,
-  //     text: "Hello Developer",
-  //     createdAt: new Date(),
-  //     user: {
-  //       _id: 2,
-  //       name: "React Native",
-  //       // avatar: "placeholder.png",
-  //     },
-  //   },
-  //   {
-  //     _id: 2,
-  //     text: 'this is a system message',
-  //     createdAt: new Date(),
-  //     system: true,
-  //   }
-  // ]);
-
+// where("uid", "==", userID));
   useEffect(() => {
-  }, []);
+    const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
+    const unsubMessages = onSnapshot(q, (docs) => {
+      let newMessages = [];
+      docs.forEach(doc => {
+        newMessages.push({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: new Date(doc.data().createdAt.toMillis())
+        })
+      })
+      setMessages(newMessages);
+    })
+    return () => {
+      if (unsubMessages) unsubMessages();
+    }
+   }, []);
 
   useEffect(() => {
     navigation.setOptions({ title: name });
@@ -59,7 +63,7 @@ const Chat = ({ route, navigation }) => {
         messages={messages}
         onSend={messages => onSend(messages)}
         user={{
-          _id: 1
+          _id: name, userID,
         }}
       />
       <View style={{ paddingBottom: 10 }}></View>
@@ -70,7 +74,7 @@ const Chat = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: .95,
   }
 });
 
