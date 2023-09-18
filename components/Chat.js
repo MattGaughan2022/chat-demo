@@ -47,6 +47,7 @@ const Chat = ({ route, navigation, db, isConnected }) => {
   // where("uid", "==", userID));
 
   let unsubMessages;
+  
   useEffect(() => {
     navigation.setOptions({ title: name });
     if (isConnected === true) {
@@ -76,7 +77,7 @@ const Chat = ({ route, navigation, db, isConnected }) => {
 
   const cachedMessages = async (messagesToCache) => {
     try {
-      await AsyncStorage.setItem('messages', JSON.stringify(messagesToCache));
+      await AsyncStorage.setItem("messages", JSON.stringify(messagesToCache));
     } catch (error) {
       console.log(error.message);
     }
@@ -87,7 +88,7 @@ const Chat = ({ route, navigation, db, isConnected }) => {
     <View style={[styles.container, { backgroundColor: route.params.color }]}>
       {/* <Text>Hello Chat Page!</Text>
      <Text>Color: {route.params.color}</Text> */}
-      {(isConnected === true) ?
+      
         <GiftedChat
           renderInputToolbar={renderInputToolbar}
           renderBubble={renderBubble}
@@ -96,7 +97,7 @@ const Chat = ({ route, navigation, db, isConnected }) => {
           user={{
             _id: name, userID,
           }}
-        /> : null}
+        />
       <View style={{ paddingBottom: 10 }}></View>
       {Platform.OS === 'android' ? <KeyboardAvoidingView behavior="height" /> : null}
     </View>
