@@ -1,7 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 
-//async/localstorage, cookies, sessionstorage
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNetInfo } from '@react-native-community/netinfo';
 import { LogBox, Alert } from "react-native";
@@ -14,6 +13,7 @@ LogBox.ignoreLogs(["AsyncStorage has been extracted from"]);
 //firestore
 import { initializeApp } from "firebase/app";
 import { getFirestore, disableNetwork, enableNetwork, setLogLevel, initializeFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 //components
 import Start from './components/Start';
@@ -24,30 +24,29 @@ import { useEffect } from 'react';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  
+
   //offline functionality
   const connectionStatus = useNetInfo();
 
-// Firebase configuration
+  // Firebase configuration
   const firebaseConfig = {
-  apiKey: "AIzaSyBEvvGLi5MAFWtgMDjODdN4I68YHBNqL_g",
-  authDomain: "chat-demo-62015.firebaseapp.com",
-  projectId: "chat-demo-62015",
-  storageBucket: "chat-demo-62015.appspot.com",
-  messagingSenderId: "489558811826",
-  appId: "1:489558811826:web:4275670d6a0f5608fad5ab"
-};
+    apiKey: "AIzaSyBEvvGLi5MAFWtgMDjODdN4I68YHBNqL_g",
+    authDomain: "chat-demo-62015.firebaseapp.com",
+    projectId: "chat-demo-62015",
+    storageBucket: "chat-demo-62015.appspot.com",
+    messagingSenderId: "489558811826",
+    appId: "1:489558811826:web:4275670d6a0f5608fad5ab"
+  };
 
-// Initialize Firebase
- const app = initializeApp(firebaseConfig);
- // db = getFirestore(app);
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = initializeFirestore(app, {
+    experimentalAutoDetectLongPolling: true,
+    useFetchStreams: false,
+  })
+  const storage = getStorage(app);
 
-const db = initializeFirestore(app, {
-  experimentalAutoDetectLongPolling: true,
-  useFetchStreams: false,
-})
 
-  
 
   useEffect(() => {
     if (connectionStatus.isConnected === false) {
@@ -69,7 +68,10 @@ const db = initializeFirestore(app, {
         />
         <Stack.Screen
           name="Chat">
-          {props => <Chat isConnected={connectionStatus.isConnected} db={db} {...props} />}
+          {props => <Chat
+            isConnected={connectionStatus.isConnected}
+            db={db} {...props}
+            storage={storage} />}
         </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>

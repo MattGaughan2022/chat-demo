@@ -10,9 +10,12 @@ import {
 } from 'react-native';
 import { Bubble, GiftedChat, InputToolbar } from "react-native-gifted-chat"; //find props from their repo
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import CustomActions from './CustomActions';
 
-const Chat = ({ route, navigation, db, isConnected }) => {
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import MapView from 'react-native-maps';
+
+const Chat = ({ route, navigation, db, isConnected, storage }) => {
   const { name, userID } = route.params;
   const [messages, setMessages] = useState([]);
 
@@ -24,12 +27,12 @@ const Chat = ({ route, navigation, db, isConnected }) => {
   const onSend = (newMessages) => {
     addDoc(collection(db, "messages"), newMessages[0])
   }
-  //alter render prop
+
   const renderInputToolbar = (props) => {
-    if (isConnected===true) return <InputToolbar {...props} />;
+    if (isConnected === true) return <InputToolbar {...props} />;
     else return null;
   }
-  //alter render prop
+
   const renderBubble = (props) => {
     return <Bubble
       {...props}
@@ -44,10 +47,13 @@ const Chat = ({ route, navigation, db, isConnected }) => {
     />
   }
 
-  // where("uid", "==", userID));
+  //action button ( '+' )
+  const renderCustomActions = (props) => {
+    return <CustomActions userID={userID} storage={storage} {...props} />;
+  };
 
   let unsubMessages;
-  
+
   useEffect(() => {
     navigation.setOptions({ title: name });
     if (isConnected === true) {
@@ -69,7 +75,7 @@ const Chat = ({ route, navigation, db, isConnected }) => {
         setMessages(newMessages);
       })
     } else loadCachedMessages();
-    
+
     return () => {
       if (unsubMessages) unsubMessages();
     }
@@ -83,21 +89,46 @@ const Chat = ({ route, navigation, db, isConnected }) => {
     }
   };
 
+  const renderCustomView = (props) => {
+    const { currentMessage } = props;
+    if (currentMessage.location) {
+      return (
+        <MapView
+          style={{
+            width: 150,
+            height: 100,
+            borderRadius: 13,
+            margin: 3
+          }}
+          region={{
+            latitude: currentMessage.location.latitude,
+            longitude: currentMessage.location.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+        />
+      );
+      // if (currentMessage.3dModel) alternate custom views
+    }
+    return null;
+  }
+
 
   return (
     <View style={[styles.container, { backgroundColor: route.params.color }]}>
       {/* <Text>Hello Chat Page!</Text>
      <Text>Color: {route.params.color}</Text> */}
-      
-        <GiftedChat
-          renderInputToolbar={renderInputToolbar}
-          renderBubble={renderBubble}
-          messages={messages}
-          onSend={messages => onSend(messages)}
-          user={{
-            _id: name, userID,
-          }}
-        />
+      <GiftedChat
+        renderInputToolbar={renderInputToolbar}
+        renderBubble={renderBubble}
+        messages={messages}
+        onSend={messages => onSend(messages)}
+        renderActions={renderCustomActions}
+        renderCustomView={renderCustomView}
+        user={{
+          _id: name, userID,
+        }}
+      />
       <View style={{ paddingBottom: 10 }}></View>
       {Platform.OS === 'android' ? <KeyboardAvoidingView behavior="height" /> : null}
     </View>
