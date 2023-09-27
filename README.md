@@ -1,5 +1,3 @@
-setup
-
 APP DEPLOYMENT SETUP
 
 1.  nvm install 16.19.0
