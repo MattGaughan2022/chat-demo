@@ -13,7 +13,7 @@ import { getAuth, signInAnonymously } from "firebase/auth";
 
 const Start = ({ navigation }) => {
   const [name, setName] = useState("");
-  const [bgColor, setBgColor] = useState("#090C08");
+  const [bgColor, setBgColor] = useState("#99ccff");
 
   const auth = getAuth();
 
@@ -58,15 +58,15 @@ const Start = ({ navigation }) => {
             <TouchableOpacity
               id="1"
               onPress={() => {
-                chooseBg("#090C08");
+                chooseBg("#99ccff");
               }}
               style={[
                 styles.squareButton,
-                { backgroundColor: "#090C08" },
-                [bgColor == "#090C08" ? { borderColor: "green" } : null],
+                { backgroundColor: "#99ccff" },
+                [bgColor == "#99ccff" ? { borderColor: "green" } : null],
               ]}
             >
-              {bgColor == "#090C08" ? (
+              {bgColor == "#99ccff" ? (
                 <Text style={{ color: "white", fontSize: 40 }}>X</Text>
               ) : null}
             </TouchableOpacity>
