@@ -1,51 +1,64 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
-  collection, getDocs, addDoc,
-  onSnapshot, query, orderBy
+  collection,
+  getDocs,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
 } from "firebase/firestore";
 import {
-  StyleSheet, View, KeyboardAvoidingView,
-  Platform, Text, TextInput, Alert,
-  TouchableOpacity
-} from 'react-native';
+  StyleSheet,
+  View,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  Alert,
+  TouchableOpacity,
+} from "react-native";
 import { Bubble, GiftedChat, InputToolbar } from "react-native-gifted-chat"; //find props from their repo
 
-import CustomActions from './CustomActions';
+import { Avatar } from "react-native-elements";
+
+import CustomActions from "./CustomActions";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import MapView from 'react-native-maps';
+import MapView from "react-native-maps";
 
 const Chat = ({ route, navigation, db, isConnected, storage }) => {
   const { name, userID } = route.params;
   const [messages, setMessages] = useState([]);
 
   const loadCachedMessages = async () => {
-    const cachedMessages = await AsyncStorage.getItem("messages") || [];
+    const cachedMessages = (await AsyncStorage.getItem("messages")) || [];
     setMessages(JSON.parse(cachedMessages));
-  }
+  };
 
   const onSend = (newMessages) => {
-    addDoc(collection(db, "messages"), newMessages[0])
-  }
+    addDoc(collection(db, "messages"), newMessages[0]);
+  };
 
   const renderInputToolbar = (props) => {
     if (isConnected === true) return <InputToolbar {...props} />;
     else return null;
-  }
+  };
 
   const renderBubble = (props) => {
-    return <Bubble
-      {...props}
-      wrapperStyle={{
-        right: {
-          backgroundColor: "#000"
-        },
-        left: {
-          backgroundColor: "#FFF"
-        }
-      }}
-    />
-  }
+    return (
+      <Bubble
+        {...props}
+        wrapperStyle={{
+          right: {
+            backgroundColor: "#000",
+          },
+          left: {
+            backgroundColor: "#FFF",
+          },
+        }}
+      />
+    );
+  };
 
   //action button ( '+' )
   const renderCustomActions = (props) => {
@@ -55,30 +68,42 @@ const Chat = ({ route, navigation, db, isConnected, storage }) => {
   let unsubMessages;
 
   useEffect(() => {
-    navigation.setOptions({ title: name });
+    navigation.setOptions({
+      title: name,
+      headerRight: () => (
+        <View style={{ marginRight: 20, paddingBottom: 10 }}>
+          <Avatar
+            rounded
+            source={{
+              uri: "https://img.myloview.com/posters/default-avatar-profile-icon-vector-social-media-user-symbol-image-700-244492311.jpg",
+            }}
+          />
+        </View>
+      ),
+    });
     if (isConnected === true) {
-
       if (unsubMessages) unsubMessages();
       unsubMessages = null;
 
       const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
       unsubMessages = onSnapshot(q, (docs) => {
         let newMessages = [];
-        docs.forEach(doc => {
+        docs.forEach((doc) => {
           newMessages.push({
             id: doc.id,
             ...doc.data(),
-            createdAt: new Date(doc.data().createdAt.toMillis())
+            name: name,
+            createdAt: new Date(doc.data().createdAt.toMillis()),
           });
         });
         cachedMessages(newMessages);
         setMessages(newMessages);
-      })
+      });
     } else loadCachedMessages();
 
     return () => {
       if (unsubMessages) unsubMessages();
-    }
+    };
   }, [isConnected]);
 
   const cachedMessages = async (messagesToCache) => {
@@ -98,7 +123,7 @@ const Chat = ({ route, navigation, db, isConnected, storage }) => {
             width: 150,
             height: 100,
             borderRadius: 13,
-            margin: 3
+            margin: 3,
           }}
           region={{
             latitude: currentMessage.location.latitude,
@@ -111,8 +136,7 @@ const Chat = ({ route, navigation, db, isConnected, storage }) => {
       // if (currentMessage.3dModel) alternate custom views
     }
     return null;
-  }
-
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: route.params.color }]}>
@@ -120,25 +144,32 @@ const Chat = ({ route, navigation, db, isConnected, storage }) => {
      <Text>Color: {route.params.color}</Text> */}
       <GiftedChat
         renderInputToolbar={renderInputToolbar}
+        renderUsernameOnMessage={true}
+        showAvatarForEveryMessage={true}
         renderBubble={renderBubble}
         messages={messages}
-        onSend={messages => onSend(messages)}
+        onSend={(messages) => onSend(messages)}
         renderActions={renderCustomActions}
         renderCustomView={renderCustomView}
         user={{
-          _id: name, userID,
+          _id: name,
+          name,
+          avatar:
+            "https://img.myloview.com/posters/default-avatar-profile-icon-vector-social-media-user-symbol-image-700-244492311.jpg",
         }}
       />
       <View style={{ paddingBottom: 10 }}></View>
-      {Platform.OS === 'android' ? <KeyboardAvoidingView behavior="height" /> : null}
+      {Platform.OS === "android" ? (
+        <KeyboardAvoidingView behavior="height" />
+      ) : null}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
-    flex: .95,
-  }
+    flex: 0.95,
+  },
 });
 
 export default Chat;
